@@ -107,7 +107,8 @@ namespace KeePass.UI
 
 		~OpenWithMenu()
 		{
-			Destroy();
+			try { Destroy(); }
+			catch(Exception) { Debug.Assert(false); }
 		}
 
 		public void Destroy()
@@ -285,7 +286,7 @@ namespace KeePass.UI
 			if(AddAppByFile(strCh, @"&Google Chrome"))
 			{
 				// https://www.chromium.org/developers/how-tos/run-chromium-with-flags
-				// http://peter.sh/examples/?/chromium-switches.html
+				// https://peter.sh/experiments/chromium-command-line-switches/
 				AddAppByShellExpand("cmd://\"" + strCh + "\" --incognito \"" +
 					PlhTargetUri + "\"", "Google Chrome (" + KPRes.Private + ")", strCh);
 			}

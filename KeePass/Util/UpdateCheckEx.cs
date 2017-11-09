@@ -238,7 +238,7 @@ namespace KeePass.Util
 		private sealed class UpdateDownloadInfo
 		{
 			public readonly string Url; // Never null
-			public object SyncObj = new object();
+			public readonly object SyncObj = new object();
 			public bool Ready = false;
 			public List<UpdateComponentInfo> ComponentInfo = null;
 
@@ -599,8 +599,8 @@ namespace KeePass.Util
 				else
 				{
 					string strMain = strHdr + MessageService.NewParagraph + strSub;
-					iResult = (MessageService.AskYesNo(strMain + MessageService.NewParagraph +
-						KPRes.UpdateCheckEnableQ, PwDefs.ShortProductName) ?
+					iResult = (MessageService.AskYesNo(strMain +
+						MessageService.NewParagraph + KPRes.UpdateCheckEnableQ) ?
 						(int)DialogResult.Yes : (int)DialogResult.No);
 				}
 

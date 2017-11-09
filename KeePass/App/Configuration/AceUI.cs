@@ -63,7 +63,8 @@ namespace KeePass.App.Configuration
 		DisableUpdateCheck = 0x20,
 
 		HideBuiltInPwGenPrfInEntryDlg = 0x10000,
-		ShowLastAccessTime = 0x20000
+		ShowLastAccessTime = 0x20000,
+		HideNewDbInfoDialogs = 0x40000
 	}
 
 	[Flags]
@@ -179,6 +180,14 @@ namespace KeePass.App.Configuration
 			set { m_bShowRecycleDlg = value; }
 		}
 
+		private bool m_bShowEmSheetDlg = true;
+		[DefaultValue(true)]
+		public bool ShowEmSheetDialog
+		{
+			get { return m_bShowEmSheetDlg; }
+			set { m_bShowEmSheetDlg = value; }
+		}
+
 		// private bool m_bUseCustomTsRenderer = true;
 		// [DefaultValue(true)]
 		// public bool UseCustomToolStripRenderer
@@ -205,6 +214,18 @@ namespace KeePass.App.Configuration
 		{
 			get { return m_bOptScreenReader; }
 			set { m_bOptScreenReader = value; }
+		}
+
+		private string m_strDataViewerRect = string.Empty;
+		[DefaultValue("")]
+		public string DataViewerRect
+		{
+			get { return m_strDataViewerRect; }
+			set
+			{
+				if(value == null) throw new ArgumentNullException("value");
+				m_strDataViewerRect = value;
+			}
 		}
 
 		private string m_strDataEditorRect = string.Empty;

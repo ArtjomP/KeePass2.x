@@ -36,6 +36,9 @@ namespace KeePass.App
 		public static readonly Color ColorControlDisabled = SystemColors.Control;
 		public static readonly Color ColorEditError = Color.FromArgb(255, 192, 192);
 
+		public static readonly Color ColorQualityLow = Color.FromArgb(255, 128, 0);
+		public static readonly Color ColorQualityHigh = Color.FromArgb(0, 255, 0);
+
 		public const string XslFilesDir = "XSL";
 		public const string XslFileHtmlFull = "KDBX_DetailsFull_HTML.xsl";
 		public const string XslFileHtmlLight = "KDBX_DetailsLight_HTML.xsl";
@@ -92,6 +95,9 @@ namespace KeePass.App
 			public const string EntryHistory = "history";
 
 			public const string KeySources = "base/keys";
+			public const string KeySourcesKeyFile = "keyfiles";
+			public const string KeySourcesUserAccount = "winuser";
+
 			public const string PwGenerator = "base/pwgenerator";
 			public const string IOConnections = "v2/ioconnect";
 			public const string UrlField = "base/autourl";
@@ -234,7 +240,7 @@ namespace KeePass.App
 		}
 
 		public const string DefaultTrlAuthor = "Dominik Reichl";
-		public const string DefaultTrlContact = @"http://www.dominik-reichl.de/";
+		public const string DefaultTrlContact = "https://www.dominik-reichl.de/";
 
 		// public const string LanguageInfoFileName = "LanguageInfo.xml";
 

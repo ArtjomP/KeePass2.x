@@ -20,30 +20,30 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Windows.Forms;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
-using System.Threading;
-using System.Security.AccessControl;
-using System.Security.Principal;
 using System.IO;
 using System.Reflection;
 using System.Resources;
-using System.Diagnostics;
+using System.Security.AccessControl;
+using System.Security.Principal;
+using System.Threading;
+using System.Windows.Forms;
 
 using KeePass.App;
 using KeePass.App.Configuration;
 using KeePass.DataExchange;
+using KeePass.Ecas;
 using KeePass.Forms;
 using KeePass.Native;
+using KeePass.Plugins;
 using KeePass.Resources;
 using KeePass.UI;
 using KeePass.Util;
 using KeePass.Util.Archive;
 using KeePass.Util.XmlSerialization;
-using KeePass.Ecas;
-using KeePass.Plugins;
 
 using KeePassLib;
 using KeePassLib.Cryptography;
@@ -534,16 +534,16 @@ namespace KeePass
 		{
 			m_bDesignMode = false; // Again, for the ones not calling Main
 
-			int nRandomSeed = (int)DateTime.UtcNow.Ticks;
-			// Prevent overflow (see Random class constructor)
-			if(nRandomSeed == int.MinValue) nRandomSeed = 17;
-			m_rndGlobal = new Random(nRandomSeed);
+			m_rndGlobal = CryptoRandom.NewWeakRandom();
 
 			InitEnvSecurity();
 			MonoWorkarounds.Initialize();
 
 			// try { NativeMethods.SetProcessDPIAware(); }
 			// catch(Exception) { }
+
+			// Do not run as AppX, because of compatibility problems
+			if(WinUtil.IsAppX) return false;
 
 			try { SelfTest.TestFipsComplianceProblems(); }
 			catch(Exception exFips)
@@ -793,7 +793,7 @@ namespace KeePass
 
 		/* private static void InitFtpWorkaround()
 		{
-			// http://support.microsoft.com/kb/2134299
+			// https://support.microsoft.com/kb/2134299
 			// https://connect.microsoft.com/VisualStudio/feedback/details/621450/problem-renaming-file-on-ftp-server-using-ftpwebrequest-in-net-framework-4-0-vs2010-only
 			try
 			{

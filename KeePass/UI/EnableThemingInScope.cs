@@ -32,12 +32,12 @@ using KeePass.Util;
 
 namespace KeePass.UI
 {
-	// Code derived from http://support.microsoft.com/kb/830033/
+	// Code derived from https://support.microsoft.com/kb/830033/
 	public sealed class EnableThemingInScope : IDisposable
 	{
 		private UIntPtr? m_nuCookie = null;
 
-		private static object m_oSync = new object();
+		private static readonly object m_oSync = new object();
 		private static IntPtr? m_nhCtx = null;
 
 		public EnableThemingInScope(bool bEnable)

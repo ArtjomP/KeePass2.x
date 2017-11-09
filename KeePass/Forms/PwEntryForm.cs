@@ -20,13 +20,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading;
-using System.Diagnostics;
+using System.Windows.Forms;
 
 using KeePass.App;
 using KeePass.App.Configuration;
@@ -662,7 +662,7 @@ namespace KeePass.Forms
 
 			BannerFactory.CreateBannerEx(this, m_bannerImage,
 				KeePass.Properties.Resources.B48x48_KGPG_Sign, strTitle, strDesc);
-			this.Icon = Properties.Resources.KeePass;
+			this.Icon = AppIcons.Default;
 			this.Text = strTitle;
 
 			m_imgGenPw = UIUtil.CreateDropDownImage(Properties.Resources.B16x16_Key_New);
@@ -1021,7 +1021,7 @@ namespace KeePass.Forms
 
 		private void OnBtnBinAdd(object sender, EventArgs e)
 		{
-			m_ctxBinAttach.Show(m_btnBinAdd, new Point(0, m_btnBinAdd.Height));
+			m_ctxBinAttach.ShowEx(m_btnBinAdd);
 		}
 
 		private void OnBtnBinDelete(object sender, EventArgs e)
@@ -1227,15 +1227,20 @@ namespace KeePass.Forms
 		{
 			if(m_pwEditMode == PwEditMode.ViewReadOnlyEntry) return;
 
-			DateTime dt = DateTime.UtcNow.Date;
-			dt = dt.AddYears(nYears);
-			dt = dt.AddMonths(nMonths);
-			dt = dt.AddDays(nDays);
+			DateTime dt = DateTime.Now; // Not UTC
+			if((nYears != 0) || (nMonths != 0) || (nDays != 0))
+			{
+				dt = dt.Date; // Remove time part
+				dt = dt.AddYears(nYears);
+				dt = dt.AddMonths(nMonths);
+				dt = dt.AddDays(nDays);
 
-			DateTime dtPrevTime = m_cgExpiry.Value;
-			dt = dt.AddHours(dtPrevTime.Hour);
-			dt = dt.AddMinutes(dtPrevTime.Minute);
-			dt = dt.AddSeconds(dtPrevTime.Second);
+				DateTime dtPrev = TimeUtil.ToLocal(m_cgExpiry.Value, false);
+				dt = dt.AddHours(dtPrev.Hour);
+				dt = dt.AddMinutes(dtPrev.Minute);
+				dt = dt.AddSeconds(dtPrev.Second);
+			}
+			// else do not change the time part of dt
 
 			m_cgExpiry.Checked = true;
 			m_cgExpiry.Value = dt;
@@ -1280,7 +1285,7 @@ namespace KeePass.Forms
 
 		private void OnBtnStandardExpiresClick(object sender, EventArgs e)
 		{
-			m_ctxDefaultTimes.Show(m_btnStandardExpires, 0, m_btnStandardExpires.Height);
+			m_ctxDefaultTimes.ShowEx(m_btnStandardExpires);
 		}
 
 		private void OnCtxCopyFieldValue(object sender, EventArgs e)
@@ -1436,7 +1441,7 @@ namespace KeePass.Forms
 
 		private void OnBtnStrMove(object sender, EventArgs e)
 		{
-			m_ctxStrMoveToStandard.Show(m_btnStrMove, 0, m_btnStrMove.Height);
+			m_ctxStrMoveToStandard.ShowEx(m_btnStrMove);
 		}
 
 		private void OnNotesLinkClicked(object sender, LinkClickedEventArgs e)
@@ -1551,7 +1556,7 @@ namespace KeePass.Forms
 			foreach(KeyValuePair<string, Image> kvp in l)
 				DynAddProfile(kvp.Key, kvp.Value, lAvailKeys);
 
-			m_ctxPwGen.Show(m_btnGenPw, new Point(0, m_btnGenPw.Height));
+			m_ctxPwGen.ShowEx(m_btnGenPw);
 		}
 
 		private void DynAddProfile(string strProfile, Image img, List<char> lAvailKeys)
@@ -1685,7 +1690,7 @@ namespace KeePass.Forms
 
 		private void OnBtnTools(object sender, EventArgs e)
 		{
-			m_ctxTools.Show(m_btnTools, 0, m_btnTools.Height);
+			m_ctxTools.ShowEx(m_btnTools);
 		}
 
 		private void OnCtxToolsHelp(object sender, EventArgs e)
@@ -1879,17 +1884,14 @@ namespace KeePass.Forms
 			{
 				if(string.IsNullOrEmpty(strFile)) { Debug.Assert(false); continue; }
 
-				byte[] vBytes = null;
-				string strMsg, strItem = UrlUtil.GetFileName(strFile);
-
+				string strItem = UrlUtil.GetFileName(strFile);
 				if(m_vBinaries.Get(strItem) != null)
 				{
-					strMsg = KPRes.AttachedExistsAlready + MessageService.NewLine +
+					string strMsg = KPRes.AttachedExistsAlready + MessageService.NewLine +
 						strItem + MessageService.NewParagraph + KPRes.AttachNewRename +
 						MessageService.NewParagraph + KPRes.AttachNewRenameRemarks0 +
 						MessageService.NewLine + KPRes.AttachNewRenameRemarks1 +
 						MessageService.NewLine + KPRes.AttachNewRenameRemarks2;
-
 					DialogResult dr = MessageService.Ask(strMsg, null,
 						MessageBoxButtons.YesNoCancel);
 
@@ -1916,7 +1918,11 @@ namespace KeePass.Forms
 
 				try
 				{
-					vBytes = File.ReadAllBytes(strFile);
+					if(!FileDialogsEx.CheckAttachmentSize(strFile, KPRes.AttachFailed +
+						MessageService.NewParagraph + strFile))
+						continue;
+
+					byte[] vBytes = File.ReadAllBytes(strFile);
 					vBytes = DataEditorForm.ConvertAttachment(strItem, vBytes);
 
 					if(vBytes != null)
@@ -2041,7 +2047,8 @@ namespace KeePass.Forms
 			AddOverrideUrlItem(l, "cmd://{SAFARI} \"{URL}\"",
 				AppLocator.SafariPath);
 
-			Debug.Assert(m_cmbOverrideUrl.InvokeRequired);
+			Debug.Assert(m_cmbOverrideUrl.InvokeRequired ||
+				MonoWorkarounds.IsRequired(373134));
 			VoidDelegate f = delegate()
 			{
 				try
